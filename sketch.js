@@ -38,7 +38,7 @@ function earlyBirdFilter(img){
     resultImg = sepiaFilter(img);
    resultImg = darkCorners(resultImg);
    resultImg = radialBlurFilter(resultImg);
-  // resultImg = borderFilter(resultImg)
+  resultImg = borderFilter(resultImg)
   return resultImg;
 }
 
@@ -188,3 +188,18 @@ function convolution(x, y, matrix, matrixSize, img)
     return [allReds,allGreens,allBlues];
 }
 
+
+
+function borderFilter(img){
+  var buffer = createGraphics(img.width, img.height);
+  buffer.image(img,0,0);
+  buffer.noFill();
+  buffer.strokeWeight(20);
+  buffer.stroke(255);
+  buffer.rect(0+ 10, 0+10, img.width-20, img.height-20, 40,40,40,40);
+
+  //Gets rid of the triangle in the corners
+  buffer.strokeWeight(40);
+  buffer.rect(0, 0, img.width, img.height);
+  return buffer;
+}
