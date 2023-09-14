@@ -28,19 +28,21 @@ function draw() {
 }
 /////////////////////////////////////////////////////////////////
 function mousePressed(){
-  loop();
+  if (mouseX < imgIn.width && mouseY < imgIn.height) {
+    loop();
+  }
 }
 /////////////////////////////////////////////////////////////////
 function earlyBirdFilter(img){
   var resultImg = createImage(img.width, img.height);
     resultImg = sepiaFilter(img);
    resultImg = darkCorners(resultImg);
-  // resultImg = radialBlurFilter(resultImg);
+   resultImg = radialBlurFilter(resultImg);
   // resultImg = borderFilter(resultImg)
   return resultImg;
 }
 
-
+//my code starts here
 function sepiaFilter(img){
   var imgOut = createImage(img.width, img.height);
   imgOut.loadPixels();
@@ -65,8 +67,10 @@ function sepiaFilter(img){
   
   return imgOut;
 }
+//ends here
 
 
+//My code starts here
 function darkCorners(img) {
   var resultImg = createImage(img.width, img.height);
   var dynLum = 1.0;
@@ -111,3 +115,76 @@ function darkCorners(img) {
   resultImg.updatePixels();
   return resultImg;
 }
+//ends here
+
+
+//My code starts here
+function radialBlurFilter(img){
+  var resultImg = createImage(img.width, img.height);
+  resultImg.loadPixels();
+  img.loadPixels();
+  let dynBlur=0;
+
+  for (var x = 0; x < img.width; x++) {
+    for (var y = 0; y < img.height; y++) {
+      // Calculate the distance between the current pixel and the mouse position
+      var distance = dist(x, y, mouseX, mouseY);
+    
+      // Map the distance to a value between 0 and 1
+
+      if (distance > 100 && distance <= 300) {
+        dynBlur = constrain(map(distance, 100, 300, 0, 1), 0, 1);
+      
+      }
+      else  if (distance > 300) {
+        dynBlur = 1;
+      }
+   
+
+      // Perform convolution (you can copy your convolution code here)
+      var c = convolution(x,y,matrix,matrix.length, img);
+
+      // Apply the dynamic blur to each color channel of the pixel
+      var index = (x + y * img.width) * 4;
+      resultImg.pixels[index + 0] = c[0] * dynBlur + img.pixels[index + 0] * (1 - dynBlur); // Red channel
+      resultImg.pixels[index + 1] = c[1] * dynBlur + img.pixels[index + 1] * (1 - dynBlur); // Green channel
+      resultImg.pixels[index + 2] = c[2] * dynBlur + img.pixels[index + 2] * (1 - dynBlur); // Blue channel
+      resultImg.pixels[index + 3] = 255;
+    }
+  }
+
+  resultImg.updatePixels();
+  return resultImg;
+}
+
+//ends here
+
+
+function convolution(x, y, matrix, matrixSize, img)
+{
+    var allReds = 0;
+    var allGreens = 0;
+    var allBlues = 0;
+
+    var offset = floor(matrixSize/2);
+
+    for(var i = 0; i < matrixSize; i++)
+    {
+        for(var j = 0; j < matrixSize; j++)
+        {
+            var posX = x + i - offset
+            var posY = y + j - offset
+
+            var index = ((img.width * posY) + posX) * 4;
+
+            index = constrain(index, 0, img.pixels.length - 1);
+
+            allReds += img.pixels[index + 0] * matrix[i][j];
+            allGreens += img.pixels[index + 1] * matrix[i][j];
+            allBlues += img.pixels[index + 2] * matrix[i][j];
+            
+        }
+    }
+    return [allReds,allGreens,allBlues];
+}
+
